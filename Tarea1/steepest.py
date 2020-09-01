@@ -6,9 +6,12 @@ __email__ = "mmsaavedra1@ing.puc.cl"
 import numpy as np
 import time
 import scipy.optimize
+from numpy import linalg as la
+
 
 # Modulo creado por usuario
 from parametros import *
+from vector_operations import *
 
 # Se crea un decorador (googlear) del tipo timer para testear el tiempo
 # de ejecucion del programa
@@ -25,47 +28,43 @@ def timer(funcion):
 
 # Se define la evaluacion de valores dentro de cada iteracion
 # de la rutina del gradiente
-def subrutina(Q, c, z):
+def subrutina(X, y, z):
     """
     Esta funcion va creando el paso de cada iteracion. Ocupando la teoría
     estudiada. Retorna el valor de la funcion, su gradiente segun
     la iteracion estudiada.
     """
-    # Dimensiones de la matriz ingresada
-    n, _ = Q.shape
-
-    # Se crean las variables que ayudan a definir la funcion principal
-    # para este caso el vector que solo posee valor en coordenada n
-    # y la matriz que posee valor en coordenada en fila m y coordenada n
-    # ademas del valor del real alpha
-
-    vector_canonico = np.zeros((n, 1))
-    vector_canonico[n-1][0] = 1
-
-    matriz_canonica = np.zeros((n,n))
-    matriz_canonica[n-1][n-1] = 1
-
-    alpha = 10
-
+    
+    alpha = z[5:].reshape((5,1))
+    beta = z[:5].reshape((5,1))
+    
+    
     # Funcion a optimizar, gradiente y hessiano
-    funcion_objetivo = 0.5 * np.dot(np.transpose(z), np.dot(Q,z)) + np.dot(np.transpose(c), z) + alpha*(5 - z[n-1])**4
-    gradiente = np.dot(Q, z) + c + vector_canonico * (-4*alpha*(5-z[n-1])**3)
+    error = prediction(X, alpha, beta) - y
+    funcion_objetivo =  0.5 * (error.T.dot(error))
+    gradiente = np.concatenate((dbeta(X, y, alpha, beta), dalpha(X, y, alpha, beta)), axis=0)
 
     return funcion_objetivo, gradiente
 
-def funcion_enunciado(lambda_, Q, c, z, alpha, direccion_descenso):
+
+def funcion_enunciado(lambda_, X, y, z, direccion_descenso):
     """
     Funcion original evaluada en: x + lambda*direccion_descenso
     """
-    m, n = Q.shape
 
-    # Se actualiza el valor de x
-    z = z + lambda_*direccion_descenso
+    # Se actualiza el valor de z
+    z = z + lambda_ * direccion_descenso
+    
+    alpha = z[5:].reshape((5,1))
+    beta = z[:5].reshape((5,1))
 
-    return (0.5 * np.dot(np.transpose(z), np.dot(Q,z)) + np.dot(np.transpose(c), z) + alpha*(5 - z[n-1])**4)[0][0]
+    error = prediction(X, alpha, beta) - y
+
+    return 0.5 * (error.T.dot(error))
+
 
 @timer
-def gradiente(Q, c, z0, epsilon, iteracion_maxima):
+def gradiente(X, y, z0, epsilon, iteracion_maxima):
     """
     Esta funcion es una aplicacion del metodo del gradiente, la que
     va a ir devolviendo valor objetivo, gradiente actual.
@@ -91,7 +90,6 @@ def gradiente(Q, c, z0, epsilon, iteracion_maxima):
     iteracion = 0
     stop = False
     z = z0
-    alpha = 10
 
     # Se prepara el output del codigo para en cada iteracion
     # entregar la informacion correspondiente
@@ -103,8 +101,9 @@ def gradiente(Q, c, z0, epsilon, iteracion_maxima):
 
         # 2º paso del algoritmo: Se obtiene la informacion para determinar
         # el valor de la direccion de descenso
-        [valor, gradiente] = subrutina(Q, c, z)
-        direccion_descenso = -gradiente
+        [valor, gradiente] = subrutina(X, y, z)
+        direccion_descenso = -1 * gradiente
+
 
         # 3º paso del algoritmo: Se analiza el criterio de parada
         norma = np.linalg.norm(gradiente, 2)
@@ -113,11 +112,9 @@ def gradiente(Q, c, z0, epsilon, iteracion_maxima):
             stop = True
         else:
         # 4º paso del algoritmo: Se busca el peso (lambda) optimo
-            # Se definen las dimensiones
-            [m, n] = Q.shape
 
             # Se resuelve el subproblema de lambda
-            lambda_ = scipy.optimize.fminbound(funcion_enunciado, 0, 10, args=(Q, c, z, alpha, direccion_descenso))
+            lambda_ = scipy.optimize.fminbound(funcion_enunciado, 0, 10, args=(X, y, z, direccion_descenso))
 
         # La rutina del gradiente muestra en pantalla para cada iteracion:
         # nº de iteracion, valor de la funcion evaluada en el x de la iteracion,
