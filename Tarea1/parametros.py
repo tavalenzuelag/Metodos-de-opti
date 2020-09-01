@@ -4,9 +4,9 @@ __email__ = "mmsaavedra1@ing.puc.cl"
 
 # Modulos nativos de python
 import numpy as np
-import scipy.linalg
 import random
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 
 def load_data(file_name):
@@ -17,10 +17,11 @@ def drop_row_and_column(n_row, n_column, df):
     return df.drop(df.columns[n_column], axis=1).drop([n_row])
 
 def get_design_matrix_and_co2_vector(df):
-    array = df.to_numpy()
-    y = array[:,0].reshape((55, 1))/1000
+    scaler = MinMaxScaler(feature_range=(1, 2))
+    array = scaler.fit_transform((df.to_numpy().astype(float)))
+    y = array[:,0].reshape((55, 1))
     X = np.delete(array, 0, axis=1)
-    return X.astype(float), y.astype(float)
+    return X, y
 
 
 
@@ -28,6 +29,6 @@ def get_design_matrix_and_co2_vector(df):
 #df = drop_row_and_column(0, 0, df)
 #X, y = get_design_matrix_and_co2_vector(df)
 
-
+#print(type(X))
 
 
