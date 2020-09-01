@@ -12,7 +12,7 @@ from parametros import *
 # esta informacion es la que pueden cambiar a su antojo
 iteracion_maxima_newton = 100
 iteracion_maxima_gradiente = 80000
-epsilon = 0.0001
+epsilon = 0.001
 
 
 # ******* NO TOCAR NADA DE AQUI PARA ABAJO ********
