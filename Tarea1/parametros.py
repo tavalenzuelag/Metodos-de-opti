@@ -1,8 +1,3 @@
-__author__ = "Moises Saavedra Caceres"
-__email__ = "mmsaavedra1@ing.puc.cl"
-
-
-# Modulos nativos de python
 import numpy as np
 import random
 import pandas as pd
@@ -23,12 +18,5 @@ def get_design_matrix_and_co2_vector(df):
     X = np.delete(array, 0, axis=1)
     return X, y
 
-
-
-#df = load_data('data.xlsx')
-#df = drop_row_and_column(0, 0, df)
-#X, y = get_design_matrix_and_co2_vector(df)
-
-#print(type(X))
 
 

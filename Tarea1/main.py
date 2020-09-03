@@ -6,12 +6,14 @@ __email__ = "mmsaavedra1@ing.puc.cl"
 from newton import *
 from steepest import *
 from parametros import *
+from bfgs import *
 
 
 # Primero se generan datos para la funcion
 # esta informacion es la que pueden cambiar a su antojo
 iteracion_maxima_newton = 100
 iteracion_maxima_gradiente = 80000
+iteracion_maxima_bfgs = 40000
 epsilon = 0.001
 
 
@@ -32,12 +34,17 @@ X, y = get_design_matrix_and_co2_vector(df)
 # Se ocupa el vector de "unos" como punto de inicio
 # (notar el salto que pega) de la iteracion 1 a la 2 el valor objetivo
 # -- Queda a tu eleccion que vector ingresar como solucion para la iteracion 1 --
-z0 = np.ones((10,1))
+z0 = np.ones((10,1), dtype = float)
+H = np.identity(10, dtype = float)
 
-# Maximo de iteraciones para newton (y asi no quede un loop infinito)
+
 #newton(Q, c, x0, epsilon, iteracion_maxima_newton)
 
-# Maximo de iteraciones para gradiente (y asi no quede un loop infinito)
-gradiente(X, y, z0, epsilon, iteracion_maxima_gradiente)
+#gradiente(X, y, z0, epsilon, iteracion_maxima_gradiente)
+
+bfgs(X, y, z0, H, epsilon, iteracion_maxima_bfgs)
+
+
+
 
 

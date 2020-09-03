@@ -1,5 +1,5 @@
 import numpy as np
-from parametros import * 
+
 
 def prediction(X, alpha, beta):
     "return vector of predictions"
@@ -72,28 +72,6 @@ def daj_ak(X, alpha, beta, j, k):
     col_k_log = np.log(col_k)
 
     return  (col_j_power * col_k_power * col_j_log * col_k_log * beta[j] * beta[k]).sum()
-
-
-def get_hessiano(X, y, alpha, beta):
-    pass
-
-
-
-
- 
-
-df = load_data('data.xlsx')
-df = drop_row_and_column(0, 0, df)
-X, y = get_design_matrix_and_co2_vector(df)
-
-z = np.ones((10,1))
-
-alpha = z[5:]
-beta = z[:5] 
-
-#print(np.empty((2,2)))
-
-
 
 
 
