@@ -10,6 +10,7 @@ from numpy import linalg as la
 from parametros import *
 from gradient_operations import *
 
+
 # Se crea un decorador (googlear) del tipo timer para testear el tiempo
 # de ejecucion del programa
 def timer(funcion):
@@ -87,6 +88,7 @@ def gradiente(X, y, z0, epsilon, iteracion_maxima):
     iteracion = 0
     stop = False
     z = z0
+    error_list = []
 
     # Se prepara el output del codigo para en cada iteracion
     # entregar la informacion correspondiente
@@ -99,6 +101,9 @@ def gradiente(X, y, z0, epsilon, iteracion_maxima):
         # 2º paso del algoritmo: Se obtiene la informacion para determinar
         # el valor de la direccion de descenso
         [valor, gradiente] = subrutina(X, y, z)
+        if iteracion > 0:
+            error_list.append(valor[0])
+        
         direccion_descenso = -1 * gradiente
 
 
@@ -107,6 +112,7 @@ def gradiente(X, y, z0, epsilon, iteracion_maxima):
 
         if norma <= epsilon:
             stop = True
+
         else:
         # 4º paso del algoritmo: Se busca el peso (lambda) optimo
 
@@ -117,8 +123,6 @@ def gradiente(X, y, z0, epsilon, iteracion_maxima):
         # nº de iteracion, valor de la funcion evaluada en el x de la iteracion,
         # la norma del gradiente y el valor de peso de lambda
         retorno_en_pantalla = [iteracion, valor, norma, lambda_]
-#       Nota de J. Vera: Esta forma de "print" requiere Python 3.6 
-#        print(f"{retorno_en_pantalla[0]: ^12d}{retorno_en_pantalla[1][0][0]: ^12f} {retorno_en_pantalla[2]: ^12f} {retorno_en_pantalla[3]: ^12f}")
 
         print("%12.6f %12.6f %12.6f %12.6f" % (retorno_en_pantalla[0],retorno_en_pantalla[1][0][0],retorno_en_pantalla[2],retorno_en_pantalla[3]))
 
@@ -128,6 +132,8 @@ def gradiente(X, y, z0, epsilon, iteracion_maxima):
         z = z + lambda_ * direccion_descenso
         iteracion += 1
 
-    return retorno_en_pantalla
+    return retorno_en_pantalla, error_list
+
+
 
 

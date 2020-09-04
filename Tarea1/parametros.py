@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 
+
 def load_data(file_name):
     return pd.read_excel(file_name)
 

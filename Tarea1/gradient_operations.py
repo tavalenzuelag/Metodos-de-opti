@@ -16,3 +16,11 @@ def dalpha(X, y, alpha, beta):
     "return alpha gradient vector"
     error = prediction(X, alpha, beta) - y
     return (np.power(X, alpha.T) * np.log(X)).T.dot(error) * beta
+
+
+
+
+
+
+
+

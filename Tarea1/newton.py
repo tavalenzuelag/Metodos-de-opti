@@ -55,8 +55,8 @@ def funcion_enunciado(lambda_, X, y, z, direccion_descenso):
     # Se actualiza el valor de z
     z = z + lambda_ * direccion_descenso
     
-    alpha = z[5:].reshape((5,1))
-    beta = z[:5].reshape((5,1))
+    alpha = z[5: ].reshape((5,1))
+    beta = z[ :5].reshape((5,1))
 
     error = prediction(X, alpha, beta) - y
 
@@ -68,6 +68,7 @@ def newton(X, y, z0, epsilon, iteracion_maxima):
     iteracion = 0
     stop = False
     z = z0
+    error_list = []
 
     # Se prepara el output del codigo para en cada iteracion
     print("\n\n*********       METODO DE NEWTON      **********\n")
@@ -88,8 +89,9 @@ def newton(X, y, z0, epsilon, iteracion_maxima):
             stop = True
         else:
         # 4º paso del algoritmo: Se busca el peso (lambda) optimo
-           
-            lambda_ = scipy.optimize.fminbound(funcion_enunciado, 0, 1, args=(X, y, z, direccion_descenso))
+            if iteracion > 1:
+               error_list.append(valor[0])
+            lambda_ = scipy.optimize.fminbound(funcion_enunciado, 0, 0.1, args=(X, y, z, direccion_descenso))
 
         # La rutina de Newton muestra en pantalla para cada iteracion:
         # nº de iteracion, valor de la funcion evaluada en el x de la iteracion,
@@ -106,4 +108,4 @@ def newton(X, y, z0, epsilon, iteracion_maxima):
         z = z + lambda_ * direccion_descenso
         iteracion += 1
 
-    return retorno_en_pantalla
+    return retorno_en_pantalla, error_list

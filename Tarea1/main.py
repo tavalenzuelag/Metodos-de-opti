@@ -8,14 +8,15 @@ from steepest import *
 from parametros import *
 from bfgs import *
 from newton_operations import *
+from visualization import visualization
 
 
 # Primero se generan datos para la funcion
 # esta informacion es la que pueden cambiar a su antojo
-iteracion_maxima_newton = 100
-iteracion_maxima_gradiente = 80000
-iteracion_maxima_bfgs = 40000
-epsilon = 0.001
+iteracion_maxima_newton = 700
+iteracion_maxima_gradiente = 800000
+iteracion_maxima_bfgs = 80000
+epsilon = 0.005
 
 
 # ******* NO TOCAR NADA DE AQUI PARA ABAJO ********
@@ -39,10 +40,18 @@ z0 = np.ones((10,1), dtype = float)
 H = np.identity(10, dtype = float)
 
 
-newton(X, y, z0, epsilon, iteracion_maxima_newton)
+#_, error_list = newton(X, y, z0, epsilon, iteracion_maxima_newton)
+#visualization(error_list, "Convergencia Método de Newton")
 
-#gradiente(X, y, z0, epsilon, iteracion_maxima_gradiente)
 
-#bfgs(X, y, z0, H, epsilon, iteracion_maxima_bfgs)
+#_, error_list = gradiente(X, y, z0, epsilon, iteracion_maxima_gradiente)
+#visualization(error_list, "Convergencia Método del gradiente")
+
+
+#_, error_list = bfgs(X, y, z0, H, epsilon, iteracion_maxima_bfgs)
+#visualization(error_list, "Convergencia Método Bfgs")
+
+
+
 
 

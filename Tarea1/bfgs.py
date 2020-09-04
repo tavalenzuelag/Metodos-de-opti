@@ -91,7 +91,7 @@ def bfgs(X, y, z0, H0, epsilon, iteracion_maxima):
     alpha = z[5:].reshape((5,1))
     beta = z[:5].reshape((5,1))
     gradiente = np.concatenate((dbeta(X, y, alpha, beta), dalpha(X, y, alpha, beta)), axis=0)
-
+    error_list = []
 
     # Se prepara el output del codigo para en cada iteracion
     print("\n\n*********       METODO DE NEWTON      **********\n")
@@ -120,6 +120,8 @@ def bfgs(X, y, z0, H0, epsilon, iteracion_maxima):
 
             [valor, gradiente_k1, H] = subrutina(X, y, z, z_k1, gradiente, H)
 
+            if iteracion > 0:
+                error_list.append(valor[0])
 
         # Se imprimen en pantalla los resultados de interés
         retorno_en_pantalla = [iteracion, valor, norma, lambda_]
@@ -132,4 +134,4 @@ def bfgs(X, y, z0, H0, epsilon, iteracion_maxima):
 
         iteracion += 1
 
-    return retorno_en_pantalla
+    return retorno_en_pantalla, error_list

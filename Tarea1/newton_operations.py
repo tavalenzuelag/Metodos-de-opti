@@ -7,7 +7,7 @@ def d_bj_bj(j, X, alpha):
 
     col_j = X[:, j].reshape((X.shape[0], 1))
     col_j_power = np.power(col_j, 2 * alpha[j])
-
+    
     return col_j_power.sum()
 
 
@@ -16,14 +16,10 @@ def d_aj_aj(j, X, y, alpha, beta):
 
     col_j = X[:, j].reshape((X.shape[0], 1))
     col_j_power = np.power(col_j, alpha[j])
-    col_j_2power = np.power(col_j, 2 * alpha[j])
-    col_j_minus_power = np.power(col_j, alpha[j] - 1)
     col_j_log_power = np.power(np.log(col_j), 2)
     error = prediction(X, alpha, beta) - y
-
-    return (np.power(beta[j], 2) * (col_j_2power * col_j_log_power + error * (col_j_power * col_j_log_power + col_j_minus_power))).sum()
-
-
+    
+    return (beta[j] * col_j_power * col_j_log_power * (beta[j] * col_j_power +  error)).sum()
 
 def d_bj_bk(j, k, X, alpha):
     "Retorna la derivada de segundo orden con respecto a b_j y b_k"
@@ -45,35 +41,38 @@ def d_aj_ak(j, k, X, alpha, beta):
     col_k_power = np.power(col_k, alpha[k])
     col_j_log = np.log(col_j)
     col_k_log = np.log(col_k)
-
-    return  (col_j_power * col_k_power * col_j_log * col_k_log * beta[j] * beta[k]).sum()
+    
+    return  (beta[j] * beta[k] * col_j_power * col_k_power * col_j_log * col_k_log).sum()
 
 
 def d_bj_ak(j, k, X, alpha, beta):
     "Retorna la derivada de segundo orden con respecto a b_j y a_k"
+
     col_j = X[:, j].reshape((X.shape[0], 1))
     col_k = X[:, k].reshape((X.shape[0], 1))
     col_j_power = np.power(col_j, alpha[j])
     col_k_power = np.power(col_k, alpha[k])
     col_k_log = np.log(col_k)
 
-    return (col_j_power * col_k_power * col_k_log * beta[k]).sum()
+    return  (beta[k] * col_j_power * col_k_power * col_k_log).sum()
 
 
 
 def d_bj_aj(j, X, y, alpha, beta):
     "Retorna la derivada de segundo orden con respecto a b_j y a_j"
+
     col_j = X[:, j].reshape((X.shape[0], 1))
     col_j_power = np.power(col_j, alpha[j])
     col_j_log = np.log(col_j)
     error = prediction(X, alpha, beta) - y
 
-    return (col_j_power * col_j_log * (beta[j] * col_j_power + error)).sum()
+    return (col_j_power * col_j_log * (error + beta[j] * (1 + error * col_j_log))).sum()
 
     
 
 def diagonal_derivate(idx, X, y, alpha, beta):
     "Retorna derivada de segundo orden para la diagonal en el índice idx"
+
     if idx <= 4:
         # derivada con respecto a beta
         return  d_bj_bj(idx, X, alpha) 
@@ -84,6 +83,7 @@ def diagonal_derivate(idx, X, y, alpha, beta):
 
 def non_diagonal_derivate(j, k, X, y, alpha, beta):
     "Retorna derivada de segundo orden en índices no diagonales"
+
     if j <= 4:
         # En este caso k también será <= 4
         return d_bj_bk(j, k, X, alpha)
@@ -98,18 +98,21 @@ def non_diagonal_derivate(j, k, X, y, alpha, beta):
 
         else:
             # Los índices son distintos
-            return d_bj_ak(k, j%5, X, alpha, beta)
+            return d_bj_ak(k, j % 5, X, alpha, beta)
 
     
     elif j > 4 and k > 4:
         # ambos corresponden a da
-        return d_aj_ak(j%5, k%5, X, alpha, beta)
+        return d_aj_ak(j % 5, k % 5, X, alpha, beta)
 
 
 
 def get_hessian(X, y, alpha, beta):
+    "Obtenemos hessiano aprovechándonos de la simetría de la matriz"
+
     hessian = np.zeros((10,10), dtype = float)
     diagonal_index = [tupla for tupla in zip(range(10), range(10))]
+
     for tupla in diagonal_index:
         # Tupla es un elemento de la diagonal
         j, k = tupla
