@@ -9,6 +9,8 @@ import scipy.optimize
 
 # Modulo creado por nosotros (parametros.py)
 from parametros import *
+from newton_operations import get_hessian
+from gradient_operations import prediction, dbeta, dalpha
 
 
 def timer(funcion):
@@ -26,77 +28,48 @@ def timer(funcion):
         return resultado
     return inner
 
-def subrutina(Q, c, x):
+def subrutina(X, y, z):
     """
     Esta funcion va creando el paso de cada iteracion. Ocupando la teoría
     estudiada. Retorna el valor de la funcion, su gradiente y su hessiano segun
     la iteracion estudiada.
     """
-    # Dimensiones de la matriz ingresada
-    n, _ = Q.shape
 
-    # Se crean las variables que ayudan a definir la funcion principal
-    # para este caso el vector que solo posee valor en coordenada n
-    # y la matriz que posee valor en coordenada en fila m y coordenada n
-    # ademas del valor del real alpha
-
-    vector_canonico = np.zeros((n, 1))
-    vector_canonico[n-1][0] = 1
-
-    matriz_canonica = np.zeros((n,n))
-    matriz_canonica[n-1][n-1] = 1
-
-    alpha = 10
-
+    alpha = z[5:].reshape((5,1))
+    beta = z[:5].reshape((5,1))
+    
+    
     # Funcion a optimizar, gradiente y hessiano
-    funcion_objetivo = 0.5 * np.dot(np.transpose(x), np.dot(Q,x)) + np.dot(np.transpose(c), x) + alpha*(5 - x[n-1])**4
-    gradiente = np.dot(Q, x) + c + vector_canonico * (-4*alpha*(5-x[n-1])**3)
-    hessiano = Q + matriz_canonica * (12*alpha*(5-x[n-1])**2)
+    error = prediction(X, alpha, beta) - y
+    funcion_objetivo =  0.5 * (error.T.dot(error))
+    gradiente = np.concatenate((dbeta(X, y, alpha, beta), dalpha(X, y, alpha, beta)), axis=0)
+    hessiano = get_hessian(X, y, alpha, beta)
 
-    return funcion_objetivo, gradiente, hessiano,
+    return funcion_objetivo, gradiente, hessiano
 
-def funcion_enunciado(lambda_, Q, c, x, alpha, direccion_descenso):
+
+def funcion_enunciado(lambda_, X, y, z, direccion_descenso):
     """
     Funcion original evaluada en: x + lambda*direccion_descenso
     """
-    m, n = Q.shape
+    # Se actualiza el valor de z
+    z = z + lambda_ * direccion_descenso
+    
+    alpha = z[5:].reshape((5,1))
+    beta = z[:5].reshape((5,1))
 
-    # Se actualiza el valor de x
-    x = x + lambda_*direccion_descenso
+    error = prediction(X, alpha, beta) - y
 
-    return (0.5 * np.dot(np.transpose(x), np.dot(Q,x)) + np.dot(np.transpose(c), x) + alpha*(5 - x[n-1])**4)[0][0]
+    return 0.5 * (error.T.dot(error))
 
 @timer
-def newton(Q, c, x0, epsilon, iteracion_maxima):
-    """
-    Esta funcion es una aplicacion del metodo de Newton, la que
-    va a ir devolviendo valor objetivo, gradiente actual y Hessiano.
-
-    Su entrada posee:
-    - Q : matriz cuadrada que constituye la funcion definida
-    - c : vector asociado que constituye la funcion definida
-    - x0 : punto inicial de prueba
-    - epsilon : error/ tolerancia deseada
-    - iteracion_maxima : numero maximo de iteraciones
-
-    Su retorno (salida) es:
-    - valor : valor de la funcion evaluada en x en la iteracion actual
-    - x : solucion en la que se alcanza el valor objetivo
-    - R : matriz con la informacion de cada iteracion. Es una fila por iteracion
-          y esta constituida por:
-          - Numero de iteracion
-          - valor
-          - norma del gradiente
-          - paso (lambda)
-    """
+def newton(X, y, z0, epsilon, iteracion_maxima):
     # 1º paso del algoritmo: Se definen los parametros iniciales
     iteracion = 0
     stop = False
-    x = x0
-    alpha = 10
+    z = z0
 
     # Se prepara el output del codigo para en cada iteracion
-    # entregar la informacion correspondiente
     print("\n\n*********       METODO DE NEWTON      **********\n")
     print("ITERACION     VALOR OBJ      NORMA        LAMBDA")
 
@@ -105,21 +78,18 @@ def newton(Q, c, x0, epsilon, iteracion_maxima):
 
         # 2º paso del algoritmo: Se obtiene la informacion para determinar
         # el valor de la direccion de descenso
-        [valor, gradiente, hessiano] = subrutina(Q, c, x)
+        [valor, gradiente, hessiano] = subrutina(X, y, z)
         direccion_descenso = np.dot(-np.linalg.inv(hessiano), gradiente)
 
         # 3º paso del algoritmo: Se analiza el criterio de parada
-        norma = np.linalg.norm(gradiente, ord=2)
+        norma = np.linalg.norm(gradiente, ord = 2)
 
         if norma <= epsilon:
             stop = True
         else:
         # 4º paso del algoritmo: Se busca el peso (lambda) optimo
-            # Se definen las dimensiones
-            [m, n] = Q.shape
-
-            # Se resuelve el subproblema de lambda
-            lambda_ = scipy.optimize.fminbound(funcion_enunciado, 0, 10, args=(Q, c, x, alpha, direccion_descenso))
+           
+            lambda_ = scipy.optimize.fminbound(funcion_enunciado, 0, 1, args=(X, y, z, direccion_descenso))
 
         # La rutina de Newton muestra en pantalla para cada iteracion:
         # nº de iteracion, valor de la funcion evaluada en el x de la iteracion,
@@ -133,25 +103,7 @@ def newton(Q, c, x0, epsilon, iteracion_maxima):
 
         # 5º paso del algoritmo: Se actualiza el valor de x para la siguiente
         # iteracion del algoritmo
-        x = x + lambda_*direccion_descenso
+        z = z + lambda_ * direccion_descenso
         iteracion += 1
 
     return retorno_en_pantalla
-
-if __name__ == '__main__':
-    # Testeo de Newton, primero se generan datos para la funcion
-    n = 4
-    Q, c = generar_datos(n)
-
-    # Se ocupa el vector de "unos" como punto de inicio
-    # (notar el salto que pega) de la iteracion 1 a la 2 el valor objetivo
-    # -- Queda a tu eleccion que vector ingresar como solucion para la iteracion 1 --
-    x0 = np.ones((n, 1))
-
-    # Error asociado 10% este caso
-    epsilon = 0.1
-
-    # Maximo de iteraciones (para que no quede un loop infinito)
-    iteracion_maxima = 50
-
-    newton(Q, c, x0, epsilon, iteracion_maxima)

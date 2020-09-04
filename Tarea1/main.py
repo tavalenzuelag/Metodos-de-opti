@@ -39,10 +39,10 @@ z0 = np.ones((10,1), dtype = float)
 H = np.identity(10, dtype = float)
 
 
-#newton(Q, c, x0, epsilon, iteracion_maxima_newton)
+newton(X, y, z0, epsilon, iteracion_maxima_newton)
 
 #gradiente(X, y, z0, epsilon, iteracion_maxima_gradiente)
 
-bfgs(X, y, z0, H, epsilon, iteracion_maxima_bfgs)
+#bfgs(X, y, z0, H, epsilon, iteracion_maxima_bfgs)
 
 
