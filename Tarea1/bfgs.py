@@ -1,4 +1,5 @@
 from bfgs_operations import *
+from gradient_operations import prediction, dalpha, dbeta
 from parametros import *
 import numpy as np
 import time

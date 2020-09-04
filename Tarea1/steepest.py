@@ -7,11 +7,8 @@ import numpy as np
 import time
 import scipy.optimize
 from numpy import linalg as la
-
-
-# Modulo creado por usuario
 from parametros import *
-from vector_operations import *
+from gradient_operations import *
 
 # Se crea un decorador (googlear) del tipo timer para testear el tiempo
 # de ejecucion del programa

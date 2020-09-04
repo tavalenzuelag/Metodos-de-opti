@@ -7,6 +7,7 @@ from newton import *
 from steepest import *
 from parametros import *
 from bfgs import *
+from newton_operations import *
 
 
 # Primero se generan datos para la funcion
@@ -43,8 +44,5 @@ H = np.identity(10, dtype = float)
 #gradiente(X, y, z0, epsilon, iteracion_maxima_gradiente)
 
 bfgs(X, y, z0, H, epsilon, iteracion_maxima_bfgs)
-
-
-
 
 

@@ -1,4 +1,3 @@
-from vector_operations import *
 import numpy as np
 
 
